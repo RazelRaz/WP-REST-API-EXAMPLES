@@ -83,6 +83,15 @@ class Rest_Demo {
             }
         ] );
 
+        //my_posts route to return posts created by the current user
+        register_rest_route('rest-demo/v1', '/my_posts', [
+            'methods' => 'GET',
+            'callback' => [$this, 'get_my_posts'],
+            'permission_callback' => function(){
+                return is_user_logged_in();
+            }
+        ]);
+
     }
 
     public function say_hello() {
@@ -211,6 +220,18 @@ class Rest_Demo {
         } else {
             return new WP_Error( 'error', 'Post not created', [ 'status' => 500 ] );
         }
+    }
+
+    function get_my_posts() {
+        $user_id = get_current_user_id();
+        $posts = get_posts([
+            'post_type' => 'post',
+            'posts_per_page' => -1,
+            'post_status' => 'publish',
+            'author' => $user_id
+        ]);
+
+        return new WP_REST_Response($posts, 200);
     }
 
 
